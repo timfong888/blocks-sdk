@@ -80,6 +80,7 @@ const MODEL_ALIASES = {
 };
 
 function resolveModel(id) {
+  if (!id || typeof id !== "string") return id;
   return MODEL_ALIASES[id.toLowerCase()] ?? id;
 }
 
