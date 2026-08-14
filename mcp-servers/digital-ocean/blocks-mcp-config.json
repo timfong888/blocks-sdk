@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "digital-ocean": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--with", "mcp[cli]",
+        "--with", "httpx",
+        "python",
+        "server.py"
+      ],
+      "env": {
+        "DO_MODEL_KEY": "${DO_MODEL_KEY}"
+      }
+    }
+  }
+}
