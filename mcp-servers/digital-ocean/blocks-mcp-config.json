@@ -1,6 +1,6 @@
 {
-  "command": "do-inference-mcp-server",
-  "args": [],
+  "command": "npx",
+  "args": ["-y", "--package", "github:timfong888/blocks-sdk", "do-inference-mcp-server"],
   "env": {
     "DO_MODEL_KEY": "${env:DO_MODEL_KEY}",
     "DO_BASE_URL": "https://inference.do-ai.run/v1"

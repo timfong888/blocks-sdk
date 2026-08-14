@@ -1,0 +1,12 @@
+{
+  "name": "blocks-sdk",
+  "version": "1.0.0",
+  "description": "Custom inference provider MCP servers for the Blocks workspace",
+  "type": "module",
+  "bin": {
+    "do-inference-mcp-server": "./mcp-servers/digital-ocean/server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
