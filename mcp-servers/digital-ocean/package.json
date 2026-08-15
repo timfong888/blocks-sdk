@@ -1,0 +1,13 @@
+{
+  "name": "do-inference-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server wrapping the DigitalOcean Serverless Inference API (OpenAI-compatible). Zero dependencies — requires Node.js 18+.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
