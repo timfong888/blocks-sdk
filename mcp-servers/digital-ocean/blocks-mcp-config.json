@@ -1,8 +1,17 @@
 {
-  "command": "npx",
-  "args": ["-y", "--package", "github:timfong888/blocks-sdk", "do-inference-mcp-server"],
-  "env": {
-    "DO_MODEL_KEY": "${env:DO_MODEL_KEY}",
-    "DO_BASE_URL": "https://inference.do-ai.run/v1"
+  "mcpServers": {
+    "digital-ocean": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--with", "mcp[cli]",
+        "--with", "httpx",
+        "python",
+        "server.py"
+      ],
+      "env": {
+        "DO_MODEL_KEY": "${DO_MODEL_KEY}"
+      }
+    }
   }
 }
