@@ -75,9 +75,10 @@ const TOOLS = [
 // Last verified against live endpoint: 2026-08-15 (76 models)
 const MODEL_ALIASES = {
   // Kimi (reasoning — require temperature=1)
-  kimi:          "kimi-k2.5",
+  kimi:          "kimi-k3",
   "kimi-latest": "kimi-k3",
   kimi3:         "kimi-k3",
+  "kimi-stable": "kimi-k2.5",
 
   // DeepSeek
   deepseek:      "deepseek-4-flash",
