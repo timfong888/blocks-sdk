@@ -41,7 +41,7 @@ const TOOLS = [
       properties: {
         model: {
           type: "string",
-          description: "DigitalOcean model ID (e.g. from do_list_models) or alias. Aliases: kimi, kimi3/kimi-latest, deepseek, deepseek-pro, glm, claude, claude-opus, claude-haiku, gpt4o, gpt5, o3, llama, qwen, qwen-coder, router, router-code, router-write",
+          description: "DigitalOcean model ID (e.g. from do_list_models) or alias. Aliases: kimi, kimi3/kimi-latest, kimi-stable, deepseek, deepseek-flash, deepseek-pro, mimo, glm, claude, claude-opus, claude-haiku, gpt4o, gpt5, o3, llama, qwen, qwen-coder, router, router-code, router-write",
         },
         messages: {
           type: "array",
@@ -81,8 +81,12 @@ const MODEL_ALIASES = {
   "kimi-stable": "kimi-k2.5",
 
   // DeepSeek
-  deepseek:      "deepseek-4-flash",
-  "deepseek-pro": "deepseek-v4-pro-0813",
+  deepseek:        "deepseek-4-flash",
+  "deepseek-flash": "deepseek-4-flash",
+  "deepseek-pro":  "deepseek-v4-pro-0813",
+
+  // MiMo
+  mimo:            "mimo-v2.5-pro",
 
   // GLM
   glm:           "glm-5.2",
