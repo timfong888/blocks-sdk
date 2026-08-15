@@ -41,7 +41,7 @@ const TOOLS = [
       properties: {
         model: {
           type: "string",
-          description: "DigitalOcean model ID (e.g. from do_list_models). Common aliases: kimi → kimi-k2-instruct, deepseek → deepseek-chat, glm → glm-4-plus",
+          description: "DigitalOcean model ID (e.g. from do_list_models) or alias. Aliases: kimi, kimi3/kimi-latest, deepseek, deepseek-pro, glm, claude, claude-opus, claude-haiku, gpt4o, gpt5, o3, llama, qwen, qwen-coder, router, router-code, router-write",
         },
         messages: {
           type: "array",
@@ -72,11 +72,41 @@ const TOOLS = [
 
 // Short aliases → full DO model IDs.
 // Run do_list_models to see the authoritative list once DO_MODEL_KEY is set.
+// Last verified against live endpoint: 2026-08-15 (76 models)
 const MODEL_ALIASES = {
-  kimi: "kimi-k2-instruct",
-  "kimi3": "kimi-k2-instruct",
-  deepseek: "deepseek-chat",
-  glm: "glm-4-plus",
+  // Kimi (reasoning — require temperature=1)
+  kimi:          "kimi-k2.5",
+  "kimi-latest": "kimi-k3",
+  kimi3:         "kimi-k3",
+
+  // DeepSeek
+  deepseek:      "deepseek-4-flash",
+  "deepseek-pro": "deepseek-v4-pro-0813",
+
+  // GLM
+  glm:           "glm-5.2",
+
+  // Anthropic / Claude
+  claude:        "anthropic-claude-5-sonnet",
+  "claude-opus": "anthropic-claude-opus-5",
+  "claude-haiku": "anthropic-claude-haiku-4.5",
+
+  // OpenAI
+  gpt4o:         "openai-gpt-4o",
+  gpt5:          "openai-gpt-5",
+  o3:            "openai-o3",
+
+  // Meta Llama
+  llama:         "llama-4-maverick",
+
+  // Qwen
+  qwen:          "qwen3.8-max",
+  "qwen-coder":  "qwen3-coder-flash",
+
+  // Routers (auto-select best model for task)
+  router:        "router:general",
+  "router-code": "router:software-engineering",
+  "router-write": "router:writing",
 };
 
 function resolveModel(id) {
