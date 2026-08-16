@@ -10,12 +10,38 @@ from mcp.server.stdio import stdio_server
 
 DO_API_BASE = "https://inference.do-ai.run/v1"
 
+_VALID_ROLES = {"system", "user", "assistant", "tool", "function"}
+
 server = Server("digital-ocean-inference")
 
 
 def _headers() -> dict:
-    key = os.environ.get("DO_MODEL_KEY", "")
+    key = os.environ.get("DO_MODEL_KEY")
+    if not key:
+        raise RuntimeError(
+            "DO_MODEL_KEY environment variable is not set; "
+            "cannot authenticate to DigitalOcean inference API."
+        )
     return {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+
+
+def _validate_messages(messages: list) -> str | None:
+    """Return an error string if messages are malformed, else None."""
+    if not isinstance(messages, list) or len(messages) == 0:
+        return "messages must be a non-empty array"
+    for i, msg in enumerate(messages):
+        if not isinstance(msg, dict):
+            return f"messages[{i}] must be an object"
+        role = msg.get("role")
+        content = msg.get("content")
+        if not isinstance(role, str) or role not in _VALID_ROLES:
+            return (
+                f"messages[{i}].role must be one of "
+                f"{sorted(_VALID_ROLES)}, got {role!r}"
+            )
+        if not isinstance(content, str):
+            return f"messages[{i}].content must be a string, got {type(content).__name__}"
+    return None
 
 
 @server.list_tools()
@@ -41,7 +67,10 @@ async def list_tools() -> list[types.Tool]:
                         "items": {
                             "type": "object",
                             "properties": {
-                                "role": {"type": "string"},
+                                "role": {
+                                    "type": "string",
+                                    "enum": list(_VALID_ROLES),
+                                },
                                 "content": {"type": "string"},
                             },
                             "required": ["role", "content"],
@@ -58,28 +87,61 @@ async def list_tools() -> list[types.Tool]:
 
 @server.call_tool()
 async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
-    async with httpx.AsyncClient(timeout=120.0) as client:
-        if name == "do_list_models":
-            resp = await client.get(f"{DO_API_BASE}/models", headers=_headers())
-            resp.raise_for_status()
-            return [types.TextContent(type="text", text=json.dumps(resp.json(), indent=2))]
+    def error(msg: str) -> list[types.TextContent]:
+        return [types.TextContent(type="text", text=f"Error: {msg}")]
 
-        if name == "do_chat_completion":
-            payload: dict = {
-                "model": arguments["model"],
-                "messages": arguments["messages"],
-                "max_tokens": arguments.get("max_tokens", 1024),
-                "temperature": arguments.get("temperature", 0.7),
-            }
-            resp = await client.post(
-                f"{DO_API_BASE}/chat/completions",
-                headers=_headers(),
-                json=payload,
-            )
-            resp.raise_for_status()
-            return [types.TextContent(type="text", text=json.dumps(resp.json(), indent=2))]
+    try:
+        headers = _headers()
+    except RuntimeError as exc:
+        return error(str(exc))
 
-        raise ValueError(f"Unknown tool: {name}")
+    try:
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            if name == "do_list_models":
+                resp = await client.get(f"{DO_API_BASE}/models", headers=headers)
+                try:
+                    resp.raise_for_status()
+                except httpx.HTTPStatusError as exc:
+                    return error(
+                        f"DO API error {exc.response.status_code}: {exc.response.text}"
+                    )
+                return [types.TextContent(type="text", text=json.dumps(resp.json(), indent=2))]
+
+            if name == "do_chat_completion":
+                model = arguments.get("model")
+                if not model or not isinstance(model, str):
+                    return error("model must be a non-empty string")
+
+                messages = arguments.get("messages")
+                validation_error = _validate_messages(messages)
+                if validation_error:
+                    return error(validation_error)
+
+                payload: dict = {
+                    "model": model,
+                    "messages": messages,
+                    "max_tokens": arguments.get("max_tokens", 1024),
+                    "temperature": arguments.get("temperature", 0.7),
+                }
+                resp = await client.post(
+                    f"{DO_API_BASE}/chat/completions",
+                    headers=headers,
+                    json=payload,
+                )
+                try:
+                    resp.raise_for_status()
+                except httpx.HTTPStatusError as exc:
+                    return error(
+                        f"DO API error {exc.response.status_code}: {exc.response.text}"
+                    )
+                return [types.TextContent(type="text", text=json.dumps(resp.json(), indent=2))]
+
+            return error(f"Unknown tool: {name}")
+
+    except httpx.TimeoutException:
+        return error("Request timed out after 120 s")
+    except httpx.RequestError as exc:
+        return error(f"Network error: {exc}")
 
 
 async def main() -> None:
