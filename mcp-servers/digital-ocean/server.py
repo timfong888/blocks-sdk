@@ -69,7 +69,7 @@ async def list_tools() -> list[types.Tool]:
                             "properties": {
                                 "role": {
                                     "type": "string",
-                                    "enum": list(_VALID_ROLES),
+                                    "enum": sorted(_VALID_ROLES),
                                 },
                                 "content": {"type": "string"},
                             },
